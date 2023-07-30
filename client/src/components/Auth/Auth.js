@@ -1,32 +1,45 @@
 import React, {useState} from 'react'
+import { useDispatch } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import useStyles from './styles'
 import LockOutlinedIcon from '@material-ui/icons/LockOpenOutlined'
 import Input from './Input'
 import { Avatar, Button, Container, Grid, Paper, Typography } from '@material-ui/core';
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import Icon from './Icon'
+import { signin, signup } from '../../actions/auth'
+
+const initialState = {firstName: '', lastName: '', email: '', password: '', confirmPassword: ''}
 
 export default function Auth() {
   const classes = useStyles();
   const [ showPassword, setShowPassword ] = useState(false);
   const [ isSignup, setisSignup] = useState(false);
+  const [ formData, setFormData ] = useState(initialState);
+  const dispatch = useDispatch();
+  const history = useHistory();
  
-  const handleSubmit = () => {
-
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (isSignup){
+      dispatch(signup(formData, history))
+    } else{
+      dispatch(signin(formData, history))
+    }
   };
 
-  const handleChange = () => {
-
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value})
   };
 
   const switchMode = () => {
     setisSignup((previsSignup) => !previsSignup)
-    handleShowPassword(false)
+    setShowPassword(false)
   }
 
   const handleShowPassword = () => setShowPassword((prevShowPassowrd) => !prevShowPassowrd);
 
-  const googleSuccess = (res) =>{
+  const googleSuccess = async (res) =>{
     console.log(res)
   }
   const googleFailure = () =>{
@@ -46,10 +59,10 @@ export default function Auth() {
               isSignup && (
                 <>
                   <Grid item xs={12} sm={6}>
-                    <Input name='firstname' label='First Name' handleChange={handleChange} autoFocus classes={classes} />
+                    <Input name='firstName' label='First Name' handleChange={handleChange} autoFocus classes={classes} />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <Input name='lastname' label='Last Name' handleChange={handleChange} classes={classes}/>
+                    <Input name='lastName' label='Last Name' handleChange={handleChange} classes={classes}/>
                   </Grid>
                 </>
               )
@@ -66,30 +79,29 @@ export default function Auth() {
                 </Grid>
               }       
               <Grid item xs={12}>
-              {/* Place the Google sign-in button within a Grid item */}
-                <GoogleOAuthProvider
+              <Grid item xs={12}>
+                <Button type='submit' fullWidth variant='contained' color='primary' className={classes.submit}>
+                  {isSignup ? 'Sign Up' : 'Sign In'}
+                </Button>
+              </Grid>
+              <GoogleOAuthProvider
                   clientId='144135918801-kh5qrtou6v5ma81tfg0g1cnvtglljtgc.apps.googleusercontent.com'
                   render={(renderProps) => (
                     <Button
                       className={classes.googleButton}
                       color='primary'
-                      variant='contained'
                       fullWidth
                       onClick={renderProps.onClick}
                       disabled={renderProps.disabled}
+                      variant='contained'
                       startIcon={<Icon />}
                     >
-                      Google Sign In
+                      Google
                     </Button>
                   )}
                   onSuccess={googleSuccess}
                   onFailure={googleFailure}
                 />
-              </Grid>
-              <Grid item xs={12}>
-                <Button type='submit' fullWidth variant='contained' color='primary' className={classes.submit}>
-                  {isSignup ? 'Sign Up' : 'Sign In'}
-                </Button>
               </Grid>
               <Grid container justify='flex-end'>
                 <Grid item>
